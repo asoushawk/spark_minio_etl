@@ -1,0 +1,82 @@
+version: '2'
+
+services:
+  spark_api:
+    build: .
+    user: root
+    ports:
+      - '5000:5000'
+    volumes:
+      - ./home:/home
+    environment:
+      - DEBIAN_FRONTEND=noninteractive
+      - ENV=PRD
+    command: ["sh", "/home/install_commands.sh"]
+
+  jupyter:
+    image: "jupyter/all-spark-notebook:latest"
+    platform: linux/arm64
+    user: root
+    environment: 
+      - GRANT_SUDO=yes
+      - NOTEBOOK_ARGS=--allow-root
+      - ENV=DEV
+    volumes:
+      - ./home:/home/jovyan
+    ports:
+      - "9999:8888"
+      #- "4040-4080:4040-4080"
+      - "7777:7777"
+
+####################
+  minio:
+    image: 'bitnami/minio:latest'
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      - MINIO_ROOT_USER=admin-admin
+      - MINIO_ROOT_PASSWORD=admin-admin
+  
+  ##############
+  
+  # spark:
+  #   image: docker.io/bitnami/spark:3.3
+  #   environment:
+  #     - SPARK_MODE=master
+  #     - SPARK_RPC_AUTHENTICATION_ENABLED=no
+  #     - SPARK_RPC_ENCRYPTION_ENABLED=no
+  #     - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+  #     - SPARK_SSL_ENABLED=no
+  #     - PYSPARK_PYTHON=3.8
+  #     - PYSPARK_DRIVER_PYTHON=3.8    
+  #     - MINIO_ACCESSKEY=oy9WWsyFNw4lFX3P 
+  #     - MINIO_SECRETKEY=ZQf5hwB9BYsN0fLjSTOlpZ560uXrZHZD
+  #   ports:
+  #     - '4040:8080'
+  #     - '7077:7077'
+  #   networks:
+  #     - spark_project_network
+
+  # spark-worker:
+  #   image: docker.io/bitnami/spark:3.3
+  #   environment:
+  #     - SPARK_MODE=worker
+  #     - SPARK_MASTER_URL=spark://spark:7077
+  #     - SPARK_WORKER_MEMORY=1G
+  #     - SPARK_WORKER_CORES=4
+  #     - SPARK_RPC_AUTHENTICATION_ENABLED=no
+  #     - SPARK_RPC_ENCRYPTION_ENABLED=no
+  #     - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+  #     - SPARK_SSL_ENABLED=no
+  #     - PYSPARK_PYTHON=3.8
+  #     - PYSPARK_DRIVER_PYTHON=3.8
+  #   ports:
+  #     - '8081:8081'
+  #     - '39257:39257'    
+
+  #   networks:
+  #     - spark_project_network
+
+  #   depends_on:
+  #     - spark
